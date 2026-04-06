@@ -13,6 +13,7 @@ It includes:
 - reusable logging, version detection, and INI settings helpers
 - a minimal ImGui panel wired through `sc4-render-services`
 - a GitHub Actions workflow that builds Win32 debug and release DLL artifacts
+- a tag-based GitHub Actions release workflow that publishes a packaged release zip
 
 ## Quick start
 
@@ -78,6 +79,11 @@ Disable automatic deployment with:
 ```powershell
 cmake --preset vs2022-win32-debug -DSC4_ENABLE_PLUGIN_DEPLOYMENT=OFF
 ```
+
+## CI and releases
+
+- `build.yml` runs on pushes to `main`, pull requests, and manual dispatch to validate debug and release builds.
+- `release.yml` runs on tags matching `v*` and publishes a GitHub Release containing a zip with the built DLL, default INI, and README.
 
 ## Template layout
 
