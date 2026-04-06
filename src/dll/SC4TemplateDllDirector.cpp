@@ -9,6 +9,14 @@
 #include "utils/Logger.h"
 #include "utils/Settings.h"
 #include "utils/VersionDetection.h"
+
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <Windows.h>
 #include <wil/win32_helpers.h>
 
 namespace {
@@ -163,4 +171,3 @@ void SC4TemplateDllDirector::InitializeLogger_()
 
     LOG_INFO("Using settings file: {}", settingsPath.string());
 }
-
