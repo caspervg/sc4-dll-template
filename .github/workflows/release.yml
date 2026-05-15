@@ -46,18 +46,6 @@ jobs:
           .\vendor\vcpkg\bootstrap-vcpkg.bat
           echo "VCPKG_ROOT=${{ github.workspace }}/vendor/vcpkg" >> $env:GITHUB_ENV
 
-      - name: Configure sc4-render-services
-        shell: powershell
-        working-directory: vendor/sc4-render-services
-        run: |
-          cmake -B build -G "Visual Studio 17 2022" -A Win32
-
-      - name: Build sc4-render-services imgui
-        shell: powershell
-        working-directory: vendor/sc4-render-services
-        run: |
-          cmake --build build --config Release --target imgui --parallel
-
       - name: Build DLL
         shell: powershell
         run: |
