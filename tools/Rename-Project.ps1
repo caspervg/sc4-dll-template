@@ -18,7 +18,7 @@ function ConvertTo-KebabCase {
 }
 
 $oldNames = @(
-    'SC4TemplateDll',
+    'SC4TemplateDll'
 ) | Where-Object { $_ -ne $ProjectName } | Select-Object -Unique
 $oldSlugs = $oldNames | ForEach-Object { ConvertTo-KebabCase $_ }
 $newSlug = ConvertTo-KebabCase $ProjectName
