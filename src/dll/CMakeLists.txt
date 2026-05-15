@@ -5,8 +5,6 @@ endif()
 
 set(SC4_RENDER_SERVICES_ROOT "${CMAKE_SOURCE_DIR}/vendor/sc4-render-services" CACHE PATH "Path to sc4-render-services")
 set(SC4_RENDER_SERVICES_PUBLIC_DIR "${SC4_RENDER_SERVICES_ROOT}/src")
-set(SC4_RENDER_SERVICES_IMGUI_DIR "${SC4_RENDER_SERVICES_ROOT}/vendor/d3d7imgui/ImGui")
-set(SC4_RENDER_SERVICES_LIB_DIR "${SC4_RENDER_SERVICES_ROOT}" CACHE PATH "Path containing imgui.lib from sc4-render-services build")
 
 set(GZCOM_DIR "${CMAKE_SOURCE_DIR}/vendor/gzcom-dll/gzcom-dll")
 
@@ -54,30 +52,13 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}"
     "${MINI_INCLUDE_DIR}"
     "${SC4_RENDER_SERVICES_PUBLIC_DIR}"
-    "${SC4_RENDER_SERVICES_IMGUI_DIR}"
 )
-
-find_library(IMGUI_LIB NAMES imgui
-    PATHS
-        "${SC4_RENDER_SERVICES_LIB_DIR}"
-        "${SC4_RENDER_SERVICES_LIB_DIR}/Release"
-        "${SC4_RENDER_SERVICES_LIB_DIR}/Debug"
-        "${SC4_RENDER_SERVICES_LIB_DIR}/build/Release"
-        "${SC4_RENDER_SERVICES_LIB_DIR}/build/Debug"
-        "${SC4_RENDER_SERVICES_LIB_DIR}/cmake-build-debug-visual-studio/Debug"
-        "${SC4_RENDER_SERVICES_LIB_DIR}/cmake-build-release-visual-studio/Release"
-    NO_DEFAULT_PATH
-)
-
-if(NOT IMGUI_LIB)
-    message(FATAL_ERROR "imgui.lib from sc4-render-services was not found. Build the imgui target in that submodule first.")
-endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
     gzcom2
     spdlog::spdlog
     WIL::WIL
-    "${IMGUI_LIB}"
+    SC4RenderServices::imgui
     kernel32
     user32
     Version
