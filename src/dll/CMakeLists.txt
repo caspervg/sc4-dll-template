@@ -7,6 +7,7 @@ set(SC4_RENDER_SERVICES_ROOT "${CMAKE_SOURCE_DIR}/vendor/sc4-render-services" CA
 set(SC4_RENDER_SERVICES_PUBLIC_DIR "${SC4_RENDER_SERVICES_ROOT}/src")
 
 set(GZCOM_DIR "${CMAKE_SOURCE_DIR}/vendor/gzcom-dll/gzcom-dll")
+set(SC4_DLL_UTILITIES_DIR "${CMAKE_SOURCE_DIR}/vendor/sc4-dll-utilities/sc4-dll-utilities")
 
 file(GLOB_RECURSE GZCOM_HEADERS CONFIGURE_DEPENDS
     "${GZCOM_DIR}/include/*.h"
@@ -26,6 +27,17 @@ list(REMOVE_ITEM GZCOM_SOURCES
 add_library(gzcom2 STATIC ${GZCOM_SOURCES} ${GZCOM_HEADERS})
 target_include_directories(gzcom2 PUBLIC "${GZCOM_DIR}/include")
 
+file(GLOB_RECURSE SC4_DLL_UTILITIES_HEADERS CONFIGURE_DEPENDS
+    "${SC4_DLL_UTILITIES_DIR}/include/*.h"
+    "${SC4_DLL_UTILITIES_DIR}/include/*.hpp"
+)
+file(GLOB_RECURSE SC4_DLL_UTILITIES_SOURCES CONFIGURE_DEPENDS
+    "${SC4_DLL_UTILITIES_DIR}/src/*.cpp"
+)
+list(REMOVE_ITEM SC4_DLL_UTILITIES_SOURCES
+    "${SC4_DLL_UTILITIES_DIR}/src/Logger.cpp"
+)
+
 find_path(MINI_INCLUDE_DIR NAMES mini/ini.h)
 if(NOT MINI_INCLUDE_DIR)
     message(FATAL_ERROR "mini/ini.h was not found. Ensure the pulzed-mini vcpkg dependency is installed.")
@@ -37,7 +49,12 @@ file(GLOB_RECURSE PROJECT_SOURCES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/*.h"
 )
 
-add_library(${PROJECT_NAME} SHARED ${PROJECT_SOURCES} "${CMAKE_CURRENT_SOURCE_DIR}/SC4TemplateDll.def")
+add_library(${PROJECT_NAME} SHARED
+    ${PROJECT_SOURCES}
+    ${SC4_DLL_UTILITIES_HEADERS}
+    ${SC4_DLL_UTILITIES_SOURCES}
+    "${CMAKE_CURRENT_SOURCE_DIR}/SC4TemplateDll.def"
+)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     NOMINMAX
@@ -52,6 +69,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}"
     "${MINI_INCLUDE_DIR}"
     "${SC4_RENDER_SERVICES_PUBLIC_DIR}"
+    "${SC4_DLL_UTILITIES_DIR}/include"
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE

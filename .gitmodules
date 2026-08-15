@@ -8,3 +8,6 @@
 	path = vendor/vcpkg
 	url = https://github.com/microsoft/vcpkg.git
 
+[submodule "vendor/sc4-dll-utilities"]
+	path = vendor/sc4-dll-utilities
+	url = git@github.com:0xC0000054/sc4-dll-utilities.git

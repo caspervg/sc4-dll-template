@@ -16,4 +16,7 @@
 *.lib
 *.ipch
 *.log
-
+.claude
+.agents
+.codex
+.mcp.json

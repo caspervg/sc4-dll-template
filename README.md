@@ -4,7 +4,7 @@
 
 It includes:
 
-- `gzcom-dll`, `sc4-render-services`, and `vcpkg` as git submodules
+- `gzcom-dll`, `sc4-dll-utilities`, `sc4-render-services`, and `vcpkg` as git submodules
 - `spdlog`, `mINI` (`pulzed-mini` in vcpkg), and `WIL` via vcpkg manifest mode
 - the Win32 static-library vcpkg triplet `x86-windows-static-md`
 - Visual Studio 2022 Win32 debug and release presets
@@ -97,4 +97,5 @@ cmake --preset vs2022-win32-debug -DSC4_ENABLE_PLUGIN_DEPLOYMENT=OFF
 
 - The template is intentionally Win32-only because SimCity 4 is a 32-bit game.
 - `sc4-render-services` must be built before the DLL because this template links against its `imgui.lib`.
+- `sc4-dll-utilities` sources are compiled into the DLL; its `Logger.cpp` is excluded because the template uses its own spdlog-based logger.
 - `mINI` is consumed via vcpkg as the `pulzed-mini` port and included as `mini/ini.h`.
