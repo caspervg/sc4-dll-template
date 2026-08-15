@@ -34,7 +34,7 @@ jobs:
             binary_dir: cmake-build-release-visual-studio
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           submodules: recursive
           fetch-depth: 0
@@ -65,6 +65,17 @@ jobs:
         run: |
           cmake --preset ${{ matrix.preset }}
           cmake --build --preset ${{ matrix.build_preset }} --parallel
+
+      - name: Verify DLL output
+        shell: powershell
+        run: |
+          $dll = "${{ matrix.binary_dir }}/src/dll/${{ matrix.config }}/SC4TemplateDll.dll"
+          if (-not (Test-Path -LiteralPath $dll)) {
+            throw "Missing DLL: $dll"
+          }
+          if ((Get-Item -LiteralPath $dll).Length -le 0) {
+            throw "DLL is empty: $dll"
+          }
 
       - name: Upload artifact
         uses: actions/upload-artifact@v6

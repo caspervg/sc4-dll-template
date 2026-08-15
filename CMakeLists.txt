@@ -69,3 +69,7 @@ find_package(wil CONFIG REQUIRED)
 include(cmake/SC4RenderServicesImGui.cmake)
 
 add_subdirectory(src/dll)
+
+install(TARGETS ${PROJECT_NAME}
+    RUNTIME DESTINATION bin
+)
