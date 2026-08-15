@@ -10,7 +10,6 @@ permissions:
 
 env:
   VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
-  CI_PROJECT_NAME: SC4TemplateRelease
 
 concurrency:
   group: release-${{ github.ref }}
@@ -61,8 +60,9 @@ jobs:
           echo "VCPKG_ROOT=${{ github.workspace }}/vendor/vcpkg" >> $env:GITHUB_ENV
 
       - name: Rename template for release build
+        if: github.event.repository.is_template
         shell: powershell
-        run: py -3 tools/rename_project.py $env:CI_PROJECT_NAME
+        run: py -3 tools/rename_project.py SC4TemplateRelease --ui imgui
 
       - name: Build DLL
         shell: powershell
@@ -73,13 +73,16 @@ jobs:
       - name: Verify DLL output
         shell: powershell
         run: |
-          $dll = "cmake-build-release-visual-studio/src/dll/Release/${{ env.CI_PROJECT_NAME }}.dll"
-          if (-not (Test-Path -LiteralPath $dll)) {
-            throw "Missing DLL: $dll"
+          $dlls = @(Get-ChildItem "cmake-build-release-visual-studio/src/dll/Release/*.dll")
+          if ($dlls.Count -ne 1) {
+            throw "Expected one DLL, found $($dlls.Count)"
           }
+          $dll = $dlls[0]
           if ((Get-Item -LiteralPath $dll).Length -le 0) {
             throw "DLL is empty: $dll"
           }
+          "DLL_PATH=$($dll.FullName)" >> $env:GITHUB_ENV
+          "PROJECT_NAME=$($dll.BaseName)" >> $env:GITHUB_ENV
 
       - name: Package release assets
         shell: powershell
@@ -88,14 +91,15 @@ jobs:
           $packageDir = Join-Path "${{ github.workspace }}" "release-package"
           New-Item -ItemType Directory -Force -Path $packageDir | Out-Null
 
-          Copy-Item "cmake-build-release-visual-studio/src/dll/Release/${{ env.CI_PROJECT_NAME }}.dll" -Destination $packageDir
-          Copy-Item "dist/${{ env.CI_PROJECT_NAME }}.ini" -Destination $packageDir
+          Copy-Item $env:DLL_PATH -Destination $packageDir
+          Copy-Item "dist/$($env:PROJECT_NAME).ini" -Destination $packageDir
           Copy-Item "README.md" -Destination $packageDir
+          Copy-Item "LICENSE.txt" -Destination $packageDir
           Copy-Item "THIRD_PARTY_NOTICES.txt" -Destination $packageDir
           Copy-Item "vendor/gzcom-dll/LICENSE" -Destination (Join-Path $packageDir "LICENSE-gzcom-dll")
           Copy-Item "vendor/sc4-render-services/LICENSE.txt" -Destination (Join-Path $packageDir "LICENSE-sc4-render-services.txt")
 
-          $archivePath = Join-Path "${{ github.workspace }}" ("${{ env.CI_PROJECT_NAME }}-" + $tag + "-win32.zip")
+          $archivePath = Join-Path "${{ github.workspace }}" ("$($env:PROJECT_NAME)-" + $tag + "-win32.zip")
           if (Test-Path $archivePath) {
             Remove-Item -LiteralPath $archivePath
           }

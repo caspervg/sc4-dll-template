@@ -12,7 +12,6 @@ permissions:
 
 env:
   VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
-  CI_PROJECT_NAME: SC4TemplateCi
 
 concurrency:
   group: build-${{ github.ref }}
@@ -62,8 +61,9 @@ jobs:
           echo "VCPKG_ROOT=${{ github.workspace }}/vendor/vcpkg" >> $env:GITHUB_ENV
 
       - name: Rename template for CI build
+        if: github.event.repository.is_template
         shell: powershell
-        run: py -3 tools/rename_project.py $env:CI_PROJECT_NAME
+        run: py -3 tools/rename_project.py SC4TemplateCi --ui imgui
 
       - name: Build DLL
         shell: powershell
@@ -74,18 +74,19 @@ jobs:
       - name: Verify DLL output
         shell: powershell
         run: |
-          $dll = "${{ matrix.binary_dir }}/src/dll/${{ matrix.config }}/${{ env.CI_PROJECT_NAME }}.dll"
-          if (-not (Test-Path -LiteralPath $dll)) {
-            throw "Missing DLL: $dll"
+          $dlls = @(Get-ChildItem "${{ matrix.binary_dir }}/src/dll/${{ matrix.config }}/*.dll")
+          if ($dlls.Count -ne 1) {
+            throw "Expected one DLL, found $($dlls.Count)"
           }
+          $dll = $dlls[0]
           if ((Get-Item -LiteralPath $dll).Length -le 0) {
             throw "DLL is empty: $dll"
           }
+          "DLL_PATH=$($dll.FullName)" >> $env:GITHUB_ENV
 
       - name: Upload artifact
         uses: actions/upload-artifact@v6
         with:
-          name: ${{ env.CI_PROJECT_NAME }}-${{ matrix.config }}-${{ github.sha }}
+          name: ${{ github.event.repository.name }}-${{ matrix.config }}-${{ github.sha }}
           compression-level: 0
-          path: |
-            ${{ matrix.binary_dir }}/src/dll/${{ matrix.config }}/${{ env.CI_PROJECT_NAME }}.dll
+          path: ${{ env.DLL_PATH }}
