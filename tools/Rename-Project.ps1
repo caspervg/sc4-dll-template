@@ -23,6 +23,24 @@ $oldNames = @(
 $oldSlugs = $oldNames | ForEach-Object { ConvertTo-KebabCase $_ }
 $newSlug = ConvertTo-KebabCase $ProjectName
 
+function Get-ProjectId {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Value
+    )
+
+    $hash = [uint32]2166136261
+    foreach ($character in $Value.ToCharArray()) {
+        $hash = [uint32](($hash -bxor [uint32][char]$character) * 16777619)
+    }
+
+    return ('0x{0:X8}u' -f $hash)
+}
+
+$newDirectorId = Get-ProjectId $ProjectName
+$newDirectorValue = [Convert]::ToUInt32($newDirectorId.Substring(2, 8), 16)
+$newPanelId = '0x{0:X8}u' -f ($newDirectorValue -bxor [uint32]0xCA510001)
+
 $extensions = @(
     '*.txt',
     '*.md',
@@ -109,6 +127,14 @@ foreach ($basePath in $renameSearchPaths) {
             Rename-Item -LiteralPath $_.FullName -NewName $newLeaf
         }
     }
+}
+
+$directorFile = Get-ChildItem -LiteralPath (Join-Path $root 'src\dll') -Filter '*Director.cpp' -File | Select-Object -First 1
+if ($directorFile) {
+    $content = [System.IO.File]::ReadAllText($directorFile.FullName)
+    $content = $content.Replace('0xE5C2B9A7u', $newDirectorId)
+    $content = $content.Replace('0xCA510001u', $newPanelId)
+    [System.IO.File]::WriteAllText($directorFile.FullName, $content, $utf8NoBom)
 }
 
 Write-Host "Renamed template identifiers to $ProjectName"

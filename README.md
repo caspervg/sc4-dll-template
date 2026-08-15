@@ -43,14 +43,7 @@ The template defaults to the Win32 static-library triplet used by this codebase:
 x86-windows-static-md
 ```
 
-5. Build `imgui.lib` from `sc4-render-services`:
-
-```powershell
-cmake -S .\vendor\sc4-render-services -B .\vendor\sc4-render-services\build -G "Visual Studio 17 2022" -A Win32
-cmake --build .\vendor\sc4-render-services\build --config Release --target imgui
-```
-
-6. Configure and build the DLL:
+5. Configure and build the DLL:
 
 ```powershell
 cmake --preset vs2022-win32-debug
@@ -83,7 +76,7 @@ cmake --preset vs2022-win32-debug -DSC4_ENABLE_PLUGIN_DEPLOYMENT=OFF
 ## CI and releases
 
 - `build.yml` runs on pushes to `main`, pull requests, and manual dispatch to validate debug and release builds.
-- `release.yml` runs on tags matching `v*` and publishes a GitHub Release containing a zip with the built DLL, default INI, and README.
+- `release.yml` runs on tags matching `vMAJOR.MINOR.PATCH` and publishes a GitHub Release containing a zip with the built DLL, default INI, README, third-party notices, and upstream dependency licenses.
 
 ## Template layout
 
@@ -96,6 +89,17 @@ cmake --preset vs2022-win32-debug -DSC4_ENABLE_PLUGIN_DEPLOYMENT=OFF
 ## Notes
 
 - The template is intentionally Win32-only because SimCity 4 is a 32-bit game.
-- `sc4-render-services` must be built before the DLL because this template links against its `imgui.lib`.
+- ImGui is built in-tree from `sc4-render-services` by the main CMake build.
 - `sc4-dll-utilities` sources are compiled into the DLL; its `Logger.cpp` is excluded because the template uses its own spdlog-based logger.
 - `mINI` is consumed via vcpkg as the `pulzed-mini` port and included as `mini/ini.h`.
+
+## Customization checklist
+
+After renaming the project, review these starter values:
+
+- replace the demo panel and director hooks with plugin-specific logic;
+- update the panel title, INI section, and default settings;
+- choose a release version and create a `vMAJOR.MINOR.PATCH` tag;
+- keep the generated director and panel IDs unless you deliberately need compatibility with an existing plugin.
+
+The rename script replaces the starter director and panel IDs with project-specific constants, so the finished DLL does not need any ID-generation code.
