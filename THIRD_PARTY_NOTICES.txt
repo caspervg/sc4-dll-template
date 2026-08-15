@@ -1,6 +1,9 @@
 Third-party notices
 ===================
 
+The SC4 DLL Template itself is licensed under LGPL-3.0-or-later; see
+LICENSE.txt.
+
 This project uses the following third-party components:
 
 * gzcom-dll, included as source under vendor/gzcom-dll
