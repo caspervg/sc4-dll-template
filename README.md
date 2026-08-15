@@ -28,7 +28,7 @@ cd <your-repo-directory>
 3. Rename the template identifiers:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\tools\Rename-Project.ps1 -ProjectName YourDllName
+python .\tools\rename_project.py YourDllName
 ```
 
 4. Bootstrap vcpkg:
