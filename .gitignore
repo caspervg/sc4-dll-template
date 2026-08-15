@@ -20,3 +20,8 @@
 .agents
 .codex
 .mcp.json
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.iml
