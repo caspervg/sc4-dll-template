@@ -9,8 +9,8 @@ from pathlib import Path
 
 
 OLD_NAME = "SC4TemplateDll"
-DIRECTOR_ID = "0xE5C2B9A7u"
-PANEL_ID = "0xCA510001u"
+DIRECTOR_ID = "0u"
+PANEL_ID = "0u"
 PATTERNS = (
     "*.txt", "*.md", "*.json", "*.yml", "*.yaml", "*.cmake",
     "CMakeLists.txt", "*.cpp", "*.hpp", "*.h", "*.def", "*.ini",

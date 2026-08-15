@@ -20,8 +20,11 @@
 #include <wil/win32_helpers.h>
 
 namespace {
-    constexpr uint32_t kDirectorId = 0xE5C2B9A7u;
-    constexpr uint32_t kPanelId = 0xCA510001u;
+    constexpr uint32_t kDirectorId = 0u;
+    constexpr uint32_t kPanelId = 0u;
+
+    static_assert(kDirectorId != 0u, "Run tools/rename_project.py or assign a unique director ID");
+    static_assert(kPanelId != 0u, "Run tools/rename_project.py or assign a unique panel ID");
 }
 
 SC4TemplateDllDirector::SC4TemplateDllDirector() = default;

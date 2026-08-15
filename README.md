@@ -103,3 +103,4 @@ After renaming the project, review these starter values:
 - keep the generated director and panel IDs unless you deliberately need compatibility with an existing plugin.
 
 The rename script replaces the starter director and panel IDs with project-specific constants, so the finished DLL does not need any ID-generation code.
+The unrenamed template intentionally does not compile; this prevents accidentally shipping the placeholder IDs.

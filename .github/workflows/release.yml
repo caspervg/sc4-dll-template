@@ -10,6 +10,7 @@ permissions:
 
 env:
   VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
+  CI_PROJECT_NAME: SC4TemplateRelease
 
 concurrency:
   group: release-${{ github.ref }}
@@ -59,6 +60,10 @@ jobs:
           .\vendor\vcpkg\bootstrap-vcpkg.bat
           echo "VCPKG_ROOT=${{ github.workspace }}/vendor/vcpkg" >> $env:GITHUB_ENV
 
+      - name: Rename template for release build
+        shell: powershell
+        run: py -3 tools/rename_project.py $env:CI_PROJECT_NAME
+
       - name: Build DLL
         shell: powershell
         run: |
@@ -68,7 +73,7 @@ jobs:
       - name: Verify DLL output
         shell: powershell
         run: |
-          $dll = "cmake-build-release-visual-studio/src/dll/Release/SC4TemplateDll.dll"
+          $dll = "cmake-build-release-visual-studio/src/dll/Release/${{ env.CI_PROJECT_NAME }}.dll"
           if (-not (Test-Path -LiteralPath $dll)) {
             throw "Missing DLL: $dll"
           }
@@ -83,14 +88,14 @@ jobs:
           $packageDir = Join-Path "${{ github.workspace }}" "release-package"
           New-Item -ItemType Directory -Force -Path $packageDir | Out-Null
 
-          Copy-Item "cmake-build-release-visual-studio/src/dll/Release/SC4TemplateDll.dll" -Destination $packageDir
-          Copy-Item "dist/SC4TemplateDll.ini" -Destination $packageDir
+          Copy-Item "cmake-build-release-visual-studio/src/dll/Release/${{ env.CI_PROJECT_NAME }}.dll" -Destination $packageDir
+          Copy-Item "dist/${{ env.CI_PROJECT_NAME }}.ini" -Destination $packageDir
           Copy-Item "README.md" -Destination $packageDir
           Copy-Item "THIRD_PARTY_NOTICES.txt" -Destination $packageDir
           Copy-Item "vendor/gzcom-dll/LICENSE" -Destination (Join-Path $packageDir "LICENSE-gzcom-dll")
           Copy-Item "vendor/sc4-render-services/LICENSE.txt" -Destination (Join-Path $packageDir "LICENSE-sc4-render-services.txt")
 
-          $archivePath = Join-Path "${{ github.workspace }}" ("SC4TemplateDll-" + $tag + "-win32.zip")
+          $archivePath = Join-Path "${{ github.workspace }}" ("${{ env.CI_PROJECT_NAME }}-" + $tag + "-win32.zip")
           if (Test-Path $archivePath) {
             Remove-Item -LiteralPath $archivePath
           }
