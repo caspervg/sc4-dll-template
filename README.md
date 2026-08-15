@@ -6,6 +6,7 @@ It includes:
 
 - `gzcom-dll`, `sc4-dll-utilities`, `sc4-render-services`, and `vcpkg` as git submodules
 - `spdlog`, `mINI` (`pulzed-mini` in vcpkg), and `WIL` via vcpkg manifest mode
+- LGPL-3.0-or-later licensing with third-party notices
 - the Win32 static-library vcpkg triplet `x86-windows-static-md`
 - Visual Studio 2022 Win32 debug and release presets
 - automatic post-build deployment to `Documents\SimCity 4\Plugins`
@@ -17,7 +18,9 @@ It includes:
 
 ## Quick start
 
-1. Create a new repository from this template on GitHub.
+1. Create a new repository from this template on GitHub and let the
+   `Initialize template` action finish. It derives the C++ project name from
+   the repository name and commits the initialized source once.
 2. Clone it with submodules:
 
 ```powershell
@@ -25,10 +28,15 @@ git clone --recurse-submodules <your-repo-url>
 cd <your-repo-directory>
 ```
 
-3. Rename the template identifiers:
+3. Repository-name parts use the casing common to the sibling SC4 projects,
+   for example `sc4-season-jumper` becomes `SC4SeasonJumper`. A `ui` or `imgui`
+   part selects the ImGui starter; all other names select the standalone
+   starter. To initialize manually or override that choice:
 
 ```powershell
-python .\tools\rename_project.py YourDllName
+python .\tools\rename_project.py YourDllName --ui imgui
+# or infer the C++ name and UI default from a repository name:
+python .\tools\rename_project.py sc4-season-jumper --repository-name
 ```
 
 4. Bootstrap vcpkg:
@@ -73,14 +81,26 @@ Disable automatic deployment with:
 cmake --preset vs2022-win32-debug -DSC4_ENABLE_PLUGIN_DEPLOYMENT=OFF
 ```
 
+Set a custom Plugins directory with:
+
+```powershell
+cmake --preset vs2022-win32-debug -DSC4_PLUGINS_DIR="C:/path/to/SimCity 4/Plugins"
+```
+
+The `--ui` choice is materialized by the initializer. The generated project
+contains either the ImGui director and panel or the standalone non-ImGui
+director; there are no ImGui conditionals in generated C++.
+
 ## CI and releases
 
 - `build.yml` runs on pushes to `main`, pull requests, and manual dispatch to validate debug and release builds.
+- `initialize.yml` runs once when GitHub creates a repository from the template, then removes itself.
 - `release.yml` runs on tags matching `vMAJOR.MINOR.PATCH` and publishes a GitHub Release containing a zip with the built DLL, default INI, README, third-party notices, and upstream dependency licenses.
 
 ## Template layout
 
-- `src/dll/`: DLL source, starter director, utilities, and demo panel
+- `src/dll/`: materialized DLL source, director, and utilities
+- `templates/`: ImGui and non-ImGui director variants used by the initializer
 - `dist/`: default runtime INI file
 - `cmake/`: helper scripts used by the build
 - `tools/`: template maintenance helpers such as project renaming
@@ -90,6 +110,8 @@ cmake --preset vs2022-win32-debug -DSC4_ENABLE_PLUGIN_DEPLOYMENT=OFF
 
 - The template is intentionally Win32-only because SimCity 4 is a 32-bit game.
 - ImGui is built in-tree from `sc4-render-services` by the main CMake build.
+- `--ui none` removes the starter panel and its render-services dependency during initialization.
+- The built DLL includes version metadata generated from the CMake/Git version.
 - `sc4-dll-utilities` sources are compiled into the DLL; its `Logger.cpp` is excluded because the template uses its own spdlog-based logger.
 - `mINI` is consumed via vcpkg as the `pulzed-mini` port and included as `mini/ini.h`.
 
@@ -98,6 +120,7 @@ cmake --preset vs2022-win32-debug -DSC4_ENABLE_PLUGIN_DEPLOYMENT=OFF
 After renaming the project, review these starter values:
 
 - replace the demo panel and director hooks with plugin-specific logic;
+- choose `--ui imgui` or `--ui none` when initializing the project;
 - update the panel title, INI section, and default settings;
 - choose a release version and create a `vMAJOR.MINOR.PATCH` tag;
 - keep the generated director and panel IDs unless you deliberately need compatibility with an existing plugin.

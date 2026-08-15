@@ -2,11 +2,7 @@
 
 #include <cRZMessage2COMDirector.h>
 #include <filesystem>
-#include <memory>
 
-#include "public/cIGZImGuiService.h"
-
-class HelloPanel;
 class cIGZMessage2;
 class cIGZCOM;
 
@@ -31,9 +27,4 @@ public:
 private:
     static std::filesystem::path GetUserPluginsPath_();
     void InitializeLogger_();
-
-private:
-    cIGZImGuiService* imguiService_ = nullptr;
-    std::unique_ptr<HelloPanel> panel_;
-    bool panelRegistered_ = false;
 };

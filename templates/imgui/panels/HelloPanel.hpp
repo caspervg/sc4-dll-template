@@ -12,7 +12,6 @@ public:
     void SetDetectedGameVersion(uint16_t version);
     void SetVersionLabel(const char* version);
     void SetVisible(bool visible);
-
     void OnRender() override;
     void OnVisibleChanged(bool visible) override;
 
@@ -21,4 +20,3 @@ private:
     uint16_t detectedGameVersion_ = 0;
     std::string versionLabel_ = "dev";
 };
-

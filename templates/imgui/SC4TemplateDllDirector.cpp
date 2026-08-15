@@ -8,7 +8,7 @@
 #include "public/ImGuiServiceIds.h"
 #include "utils/Logger.h"
 #include "utils/Settings.h"
-#include "utils/VersionDetection.h"
+#include "SC4VersionDetection.h"
 
 #ifndef NOMINMAX
 #define NOMINMAX
@@ -28,46 +28,29 @@ namespace {
 }
 
 SC4TemplateDllDirector::SC4TemplateDllDirector() = default;
-
 SC4TemplateDllDirector::~SC4TemplateDllDirector() = default;
 
-uint32_t SC4TemplateDllDirector::GetDirectorID() const
-{
-    return kDirectorId;
-}
+uint32_t SC4TemplateDllDirector::GetDirectorID() const { return kDirectorId; }
 
 bool SC4TemplateDllDirector::OnStart(cIGZCOM* pCOM)
 {
     cRZMessage2COMDirector::OnStart(pCOM);
-
-    if (auto* framework = RZGetFrameWork()) {
-        framework->AddHook(this);
-    }
-
+    if (auto* framework = RZGetFrameWork()) framework->AddHook(this);
     return true;
 }
 
-bool SC4TemplateDllDirector::PreFrameWorkInit()
-{
-    return true;
-}
-
-bool SC4TemplateDllDirector::PreAppInit()
-{
-    return true;
-}
+bool SC4TemplateDllDirector::PreFrameWorkInit() { return true; }
+bool SC4TemplateDllDirector::PreAppInit() { return true; }
 
 bool SC4TemplateDllDirector::PostAppInit()
 {
     InitializeLogger_();
-
-    const auto gameVersion = VersionDetection::GetInstance().GetGameVersion();
+    const auto gameVersion = SC4VersionDetection::GetGameVersion();
     LOG_INFO("PostAppInit");
     LOG_INFO("Detected game version: {}", gameVersion);
 
     if (mpFrameWork && mpFrameWork->GetSystemService(
-        kImGuiServiceID,
-        GZIID_cIGZImGuiService,
+        kImGuiServiceID, GZIID_cIGZImGuiService,
         reinterpret_cast<void**>(&imguiService_))) {
         panel_ = std::make_unique<HelloPanel>();
         panel_->SetDetectedGameVersion(gameVersion);
@@ -78,30 +61,21 @@ bool SC4TemplateDllDirector::PostAppInit()
         panel_->SetVisible(settings.GetStartWindowVisible());
 
         const ImGuiPanelDesc desc = ImGuiPanelAdapter<HelloPanel>::MakeDesc(
-            panel_.get(),
-            kPanelId,
-            100,
-            settings.GetStartWindowVisible());
+            panel_.get(), kPanelId, 100, settings.GetStartWindowVisible());
 
         if (imguiService_->RegisterPanel(desc)) {
             panelRegistered_ = true;
             LOG_INFO("Registered demo ImGui panel");
-        }
-        else {
+        } else {
             LOG_WARN("Failed to register demo ImGui panel");
         }
-    }
-    else {
+    } else {
         LOG_WARN("ImGui service not available");
     }
-
     return true;
 }
 
-bool SC4TemplateDllDirector::PreAppShutdown()
-{
-    return true;
-}
+bool SC4TemplateDllDirector::PreAppShutdown() { return true; }
 
 bool SC4TemplateDllDirector::PostAppShutdown()
 {
@@ -109,50 +83,27 @@ bool SC4TemplateDllDirector::PostAppShutdown()
         imguiService_->UnregisterPanel(kPanelId);
         panelRegistered_ = false;
     }
-
     panel_.reset();
-
     if (imguiService_) {
         imguiService_->Release();
         imguiService_ = nullptr;
     }
-
-    if (auto* framework = RZGetFrameWork()) {
-        framework->RemoveHook(this);
-    }
-
+    if (auto* framework = RZGetFrameWork()) framework->RemoveHook(this);
     Logger::Shutdown();
     return true;
 }
 
-bool SC4TemplateDllDirector::PostSystemServiceShutdown()
-{
-    return true;
-}
-
-bool SC4TemplateDllDirector::AbortiveQuit()
-{
-    return true;
-}
-
-bool SC4TemplateDllDirector::OnInstall()
-{
-    return true;
-}
-
-bool SC4TemplateDllDirector::DoMessage(cIGZMessage2* pMsg)
-{
-    (void)pMsg;
-    return true;
-}
+bool SC4TemplateDllDirector::PostSystemServiceShutdown() { return true; }
+bool SC4TemplateDllDirector::AbortiveQuit() { return true; }
+bool SC4TemplateDllDirector::OnInstall() { return true; }
+bool SC4TemplateDllDirector::DoMessage(cIGZMessage2*) { return true; }
 
 std::filesystem::path SC4TemplateDllDirector::GetUserPluginsPath_()
 {
     try {
         const auto modulePath = wil::GetModuleFileNameW(wil::GetModuleInstanceHandle());
         return std::filesystem::path(modulePath.get()).parent_path();
-    }
-    catch (const wil::ResultException&) {
+    } catch (const wil::ResultException&) {
         return {};
     }
 }
@@ -160,17 +111,12 @@ std::filesystem::path SC4TemplateDllDirector::GetUserPluginsPath_()
 void SC4TemplateDllDirector::InitializeLogger_()
 {
     const auto pluginsPath = GetUserPluginsPath_();
-    const auto logPath = pluginsPath.parent_path();
     const auto settingsPath = pluginsPath / "SC4TemplateDll.ini";
-
-    Logger::Initialize("SC4TemplateDll", logPath.string(), false);
-
+    Logger::Initialize("SC4TemplateDll", pluginsPath.parent_path().string(), false);
     Settings settings;
     settings.Load(settingsPath);
-
     Logger::Shutdown();
-    Logger::Initialize("SC4TemplateDll", logPath.string(), settings.GetLogToFile());
+    Logger::Initialize("SC4TemplateDll", pluginsPath.parent_path().string(), settings.GetLogToFile());
     Logger::SetLevel(settings.GetLogLevel());
-
     LOG_INFO("Using settings file: {}", settingsPath.string());
 }
