@@ -49,17 +49,24 @@ file(GLOB_RECURSE PROJECT_SOURCES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/*.h"
 )
 
+string(REPLACE "." "," SC4_RESOURCE_FILE_VERSION "${PROJECT_VERSION}")
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/version.rc.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/version.rc"
+    @ONLY
+)
+
 add_library(${PROJECT_NAME} SHARED
     ${PROJECT_SOURCES}
     ${SC4_DLL_UTILITIES_HEADERS}
     ${SC4_DLL_UTILITIES_SOURCES}
     "${CMAKE_CURRENT_SOURCE_DIR}/SC4TemplateDll.def"
+    "${CMAKE_CURRENT_BINARY_DIR}/version.rc"
 )
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     NOMINMAX
     WIN32_LEAN_AND_MEAN
-    IMGUI_DLL_IMPORT
     SC4_TEMPLATE_DLL_NAME="${PROJECT_NAME}"
     SC4_TEMPLATE_DLL_VERSION="${PROJECT_VERSION}"
     SC4_TEMPLATE_DLL_VERSION_LABEL="${SC4_TEMPLATE_APP_VERSION}"
@@ -68,21 +75,28 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 target_include_directories(${PROJECT_NAME} PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}"
     "${MINI_INCLUDE_DIR}"
-    "${SC4_RENDER_SERVICES_PUBLIC_DIR}"
     "${SC4_DLL_UTILITIES_DIR}/include"
 )
+
+if(SC4_ENABLE_IMGUI)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE IMGUI_DLL_IMPORT)
+    target_include_directories(${PROJECT_NAME} PRIVATE "${SC4_RENDER_SERVICES_PUBLIC_DIR}")
+endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
     gzcom2
     spdlog::spdlog
     WIL::WIL
-    SC4RenderServices::imgui
     kernel32
     user32
     Version
     ddraw
     dxguid
 )
+
+if(SC4_ENABLE_IMGUI)
+    target_link_libraries(${PROJECT_NAME} PRIVATE SC4RenderServices::imgui)
+endif()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
     OUTPUT_NAME "SC4TemplateDll"
@@ -97,9 +111,7 @@ if(MSVC)
 endif()
 
 if(WIN32 AND SC4_ENABLE_PLUGIN_DEPLOYMENT)
-    set(USERPROFILE_DIR "$ENV{USERPROFILE}")
-    if(USERPROFILE_DIR)
-        set(SC4_PLUGINS_DIR "${USERPROFILE_DIR}/Documents/SimCity 4/Plugins")
+    if(SC4_PLUGINS_DIR)
         add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E make_directory "${SC4_PLUGINS_DIR}"
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
@@ -113,6 +125,6 @@ if(WIN32 AND SC4_ENABLE_PLUGIN_DEPLOYMENT)
         )
         message(STATUS "Plugin deployment enabled: ${SC4_PLUGINS_DIR}")
     else()
-        message(WARNING "USERPROFILE is not set. Automatic Plugins deployment is disabled.")
+        message(WARNING "SC4_PLUGINS_DIR is empty. Automatic Plugins deployment is disabled.")
     endif()
 endif()

@@ -51,6 +51,14 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(SC4_ENABLE_PLUGIN_DEPLOYMENT "Copy the built DLL into Documents/SimCity 4/Plugins after each build" ON)
+set(SC4_PLUGINS_DIR "$ENV{USERPROFILE}/Documents/SimCity 4/Plugins" CACHE PATH
+    "SimCity 4 Plugins directory used for post-build deployment")
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/dll/panels/HelloPanel.cpp")
+    set(SC4_ENABLE_IMGUI ON)
+else()
+    set(SC4_ENABLE_IMGUI OFF)
+endif()
 
 if(WIN32)
     add_definitions(-DWIN32 -D_WINDOWS -DUNICODE -D_UNICODE)
@@ -66,7 +74,9 @@ endif()
 find_package(spdlog CONFIG REQUIRED)
 find_package(wil CONFIG REQUIRED)
 
-include(cmake/SC4RenderServicesImGui.cmake)
+if(SC4_ENABLE_IMGUI)
+    include(cmake/SC4RenderServicesImGui.cmake)
+endif()
 
 add_subdirectory(src/dll)
 
