@@ -96,6 +96,18 @@ director; there are no ImGui conditionals in generated C++.
 - `build.yml` runs on pushes to `main`, pull requests, and manual dispatch to validate debug and release builds.
 - `initialize.yml` runs once when GitHub creates a repository from the template, then removes itself.
 - `release.yml` runs on tags matching `vMAJOR.MINOR.PATCH` and publishes a GitHub Release containing a zip with the built DLL, default INI, README, third-party notices, and upstream dependency licenses.
+  Its `sc4pac` job then proposes the release to sc4pac, once that is set up.
+
+### Publishing to sc4pac
+
+After the DLL has been added to an [sc4pac](https://memo33.github.io/sc4pac/) channel, the release workflow can keep its metadata up to date with [caspervg/sc4pac-release-action](https://github.com/caspervg/sc4pac-release-action). After each release, it updates the version, download URL and checksums in the channel's YAML. It then pushes that change to your fork of the channel and links to a prefilled pull request in the job summary. The first listing in the channel is still done by hand.
+
+A repository created from this template doesn't inherit environments, secrets or variables, so the job stays off until you set it up:
+
+1. Fork the channel, by default [sebamarynissen/simtropolis-channel](https://github.com/sebamarynissen/simtropolis-channel).
+2. Create a [fine-grained token](https://github.com/settings/personal-access-tokens/new) that can access only that fork, with *Contents: Read and write*. One such token can serve all your DLL repositories.
+3. In this repository, create an environment `sc4pac` (Settings → Environments). Limit its deployment branches and tags to the tag rule `v*`, and add the token as the secret `SC4PAC_FORK_TOKEN`.
+4. Add the repository variable `SC4PAC_ASSET_ID` (Settings → Secrets and variables → Actions → Variables) with the `assetId` of the release zip in the channel. Set `SC4PAC_CHANNEL` too if the package is in a channel other than the Simtropolis one.
 
 ## Template layout
 

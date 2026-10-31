@@ -120,3 +120,21 @@ jobs:
             --repo "${{ github.repository }}" `
             --title "${{ github.ref_name }}" `
             --generate-notes
+
+  # Points the sc4pac package at the new release on a branch of your fork of the channel, and links
+  # to a prefilled pull request in the job summary. Off until the repository variable SC4PAC_ASSET_ID
+  # names the package's asset in the channel; see "Publishing to sc4pac" in the README.
+  sc4pac:
+    if: ${{ vars.SC4PAC_ASSET_ID != '' }}
+    needs: release-win32
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    environment: sc4pac
+    concurrency: sc4pac-${{ vars.SC4PAC_ASSET_ID }}
+    steps:
+      - uses: caspervg/sc4pac-release-action@v1
+        with:
+          channel: ${{ vars.SC4PAC_CHANNEL || 'sebamarynissen/simtropolis-channel' }}
+          asset-id: ${{ vars.SC4PAC_ASSET_ID }}
+          token: ${{ secrets.SC4PAC_FORK_TOKEN }}
